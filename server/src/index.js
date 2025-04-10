@@ -72,9 +72,11 @@ app.post("/auth/user/sign-up", async (req, res) => {
 app.post("/auth/user/login", async (req, res) => {
   const { email, password } = req.body;
 
+  console.log(req.body);
+
   if (!email || !password) {
     return res.status(402).json({
-      error: "All fields are required",
+      message: "All fields are required",
     });
   }
 
@@ -99,7 +101,13 @@ app.post("/auth/user/login", async (req, res) => {
     res.json({
       message: "Login successful",
       token,
-      user: { id: user.id, name: user.name, email: user.email },
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      },
     });
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
@@ -124,6 +132,50 @@ app.get("/doe", verifyToken, async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server error");
+  }
+});
+
+app.post("/auth/verify-token", async (req, res) => {
+  const { token } = req.body;
+
+  if (!token) {
+    return res.status(401).json({ message: "Token not provided" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    res.status(200).json({ valid: true, user: decoded });
+  } catch (err) {
+    return res
+      .status(401)
+      .json({ valid: false, message: "Invalid or expired token" });
+  }
+});
+
+app.get("/doe/search/suggestions/", verifyToken, async (req, res) => {
+  const { query } = req.query;
+
+  if (!query) return res.json([]);
+
+  try {
+    const result = await pool.query(
+      `SELECT DISTINCT "Tool_Diameter" FROM doe_data
+       WHERE "Tool_Diameter"::text ILIKE $1
+       ORDER BY "Tool_Diameter"
+       LIMIT 5`,
+      [`${query}%`]
+    );
+
+    if (!result) {
+      return res.status(402).json({
+        message: "No results found",
+      });
+    }
+
+    res.json(result.rows.map((row) => row.Tool_Diameter));
+  } catch (err) {
+    console.error("Suggestion error:", err);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
