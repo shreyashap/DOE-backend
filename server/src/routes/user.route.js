@@ -82,7 +82,7 @@ router.route("/user/login").post(async (req, res) => {
   }
 });
 
-router.route("/verify-token").get(async (req, res) => {
+router.route("/verify-token").post(async (req, res) => {
   const { token } = req.body;
 
   if (!token) {
