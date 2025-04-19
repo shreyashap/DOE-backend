@@ -72,4 +72,33 @@ router.route("/:serialNumber").get(verifyToken, async (req, res) => {
   }
 });
 
+router
+  .route("/filter/operation-description")
+  .get(verifyToken, async (req, res) => {
+    const { description } = req.query;
+
+    if (!description) {
+      return res.status(400).json({ error: "Missing operation description" });
+    }
+
+    try {
+      const query = `
+      SELECT * FROM doe_data 
+      WHERE LOWER("Operation_Description") ILIKE $1
+    `;
+
+      const value = `%${description.toLowerCase()}%`;
+      const result = await pool.query(query, [value]);
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: "No matching records found" });
+      }
+
+      res.json(result.rows);
+    } catch (err) {
+      console.error("Filter error:", err.message);
+      res.status(500).send("Server error");
+    }
+  });
+
 export default router;

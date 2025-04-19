@@ -9,7 +9,15 @@ export default function Search() {
 
   const handleSearch = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/doe?diameter=${diameter}`);
+      const res = await axios.get(
+        `http://localhost:5000/doe?diameter=${diameter}`,
+        {
+          headers: {
+            Authorization:
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJqb2huQGdtYWlsLmNvbSIsImlhdCI6MTc0NDI2MzI1MCwiZXhwIjoxNzQ0MzQ5NjUwfQ.Fw2UfSA_LmuBiW5UNfOYY5K6SmXQmCOqje0Ab44Z5c8",
+          },
+        }
+      );
       setResults(res.data);
     } catch (err) {
       console.error(err);
