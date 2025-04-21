@@ -52,25 +52,7 @@ router.route("/search/suggestions").get(verifyToken, async (req, res) => {
   }
 });
 
-router.route("/:serialNumber").get(verifyToken, async (req, res) => {
-  const { serialNumber } = req.params;
 
-  try {
-    const result = await pool.query(
-      'SELECT * FROM "doe_data" WHERE "DOE_Serial_Number" = $1',
-      [serialNumber]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: "DOE entry not found" });
-    }
-
-    res.json(result.rows[0]);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server error");
-  }
-});
 
 router
   .route("/filter/operation-description")
@@ -101,4 +83,48 @@ router
     }
   });
 
+router.route("/search").get(verifyToken, async (req, res) => {
+  const { diameter, description } = req.query;
+
+  try {
+    let query = `SELECT * FROM doe_data WHERE 1=1`;
+    const values = [];
+
+    if (diameter) {
+      values.push(`%${diameter.toLowerCase()}%`);
+      query += ` AND LOWER("Tool_Diameter"::text) ILIKE $${values.length}`;
+    }
+
+    if (description) {
+      values.push(`%${description.toLowerCase()}%`);
+      query += ` AND LOWER("Operation_Description") ILIKE $${values.length}`;
+    }
+
+    const result = await pool.query(query, values);
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Combined filter error:", err.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+router.route("/:serialNumber").get(verifyToken, async (req, res) => {
+  const { serialNumber } = req.params;
+
+  try {
+    const result = await pool.query(
+      'SELECT * FROM "doe_data" WHERE "DOE_Serial_Number" = $1',
+      [serialNumber]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "DOE entry not found" });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
+});
 export default router;
