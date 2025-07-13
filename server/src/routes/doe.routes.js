@@ -9,7 +9,7 @@ router.route("/").get(verifyToken, async (req, res) => {
 
   try {
     const query = diameter
-      ? `SELECT * FROM doe_data WHERE LOWER("Tool_Diameter"::text) ILIKE $1`
+      ? `SELECT * FROM doe_data WHERE LOWER("Tool Diameter"::text) ILIKE $1`
       : "SELECT * FROM doe_data";
 
     const value = `%${diameter?.toLowerCase()}%`;
@@ -32,9 +32,9 @@ router.route("/search/suggestions").get(verifyToken, async (req, res) => {
 
   try {
     const result = await pool.query(
-      `SELECT DISTINCT "Tool_Diameter" FROM doe_data
-       WHERE "Tool_Diameter"::text ILIKE $1
-       ORDER BY "Tool_Diameter"
+      `SELECT DISTINCT "Tool Diameter" FROM doe_data
+       WHERE "Tool Diameter"::text ILIKE $1
+       ORDER BY "Tool Diameter"
        LIMIT 5`,
       [`${query}%`]
     );
@@ -52,8 +52,6 @@ router.route("/search/suggestions").get(verifyToken, async (req, res) => {
   }
 });
 
-
-
 router
   .route("/filter/operation-description")
   .get(verifyToken, async (req, res) => {
@@ -66,7 +64,7 @@ router
     try {
       const query = `
       SELECT * FROM doe_data 
-      WHERE LOWER("Operation_Description") ILIKE $1
+      WHERE LOWER("Operation Description") ILIKE $1
     `;
 
       const value = `%${description.toLowerCase()}%`;
@@ -92,12 +90,12 @@ router.route("/search").get(verifyToken, async (req, res) => {
 
     if (diameter) {
       values.push(`%${diameter.toLowerCase()}%`);
-      query += ` AND LOWER("Tool_Diameter"::text) ILIKE $${values.length}`;
+      query += ` AND LOWER("Tool Diameter"::text) ILIKE $${values.length}`;
     }
 
     if (description) {
       values.push(`%${description.toLowerCase()}%`);
-      query += ` AND LOWER("Operation_Description") ILIKE $${values.length}`;
+      query += ` AND LOWER("Operation Description") ILIKE $${values.length}`;
     }
 
     const result = await pool.query(query, values);
@@ -113,7 +111,7 @@ router.route("/:serialNumber").get(verifyToken, async (req, res) => {
 
   try {
     const result = await pool.query(
-      'SELECT * FROM "doe_data" WHERE "DOE_Serial_Number" = $1',
+      'SELECT * FROM "doe_data" WHERE "DOE Serial Number" = $1',
       [serialNumber]
     );
 
