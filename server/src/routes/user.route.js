@@ -71,10 +71,9 @@ router.route("/user/login").post(async (req, res) => {
       token,
       user: {
         id: user.id,
-        name: user.name,
         email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
+        firstName: user.firstname,
+        lastName: user.lastname,
       },
     });
   } catch (err) {
